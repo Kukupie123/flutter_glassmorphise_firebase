@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "203925391156",
+    "project_id": "teacherstudent-997fa",
+    "storage_bucket": "teacherstudent-997fa.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:203925391156:android:5491dff85ddf0ae2568761",
+        "android_client_info": {
+          "package_name": "com.kuku.teacher_student_firebae"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "203925391156-9ce3n1s25v9ih4q3v00pgq9nk0ft4cs9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAZOwuX9PFYsYAjJF3hEEhfVxA3CGqJzmE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "203925391156-9ce3n1s25v9ih4q3v00pgq9nk0ft4cs9.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
