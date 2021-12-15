@@ -24,13 +24,18 @@ class AuthService {
     return await user.sendEmailVerification();
   }
 
-  static Future<void> uploadStudentData(FirebaseFirestore fbs, String uid,
-      String studentName, GENDER gender, Timestamp dob) async {
+  static Future<void> uploadStudentData(
+      FirebaseFirestore fbs,
+      String uid,
+      String studentName,
+      GENDER gender,
+      Timestamp dob,
+      BuildContext context) async {
     //Check if doc exists with this id
 
     var doc = await fbs.collection(tableName).doc(uid).get();
     if (doc.exists == false) {
-      await _createUser(uid);
+      await _createUser(uid, context);
     }
     await fbs.collection(tableName).doc(uid).collection("StudentTable").add({
       "Name": studentName,
@@ -39,10 +44,26 @@ class AuthService {
     });
   }
 
-  _createUser(String uid, BuildContext context) async {
+  static _createUser(String uid, BuildContext context) async {
     String table = "TeacherTable";
     var pro = Provider.of<ProviderAuthConfig>(context, listen: false);
     var fbs = FirebaseFirestore.instanceFor(app: pro.firebaseApp);
     await fbs.collection(table).doc(uid).set({"dummy data": "dummy data"});
+  }
+
+  static logoutPressed(BuildContext context) async {
+    Provider.of<ProviderAuthConfig>(context, listen: false)
+        .firebaseAuth
+        .signOut();
+  }
+
+  static updateStudentData(FirebaseFirestore fbs, String uidOfTeacher,
+      String uidOfStudent, Map<String, dynamic> updatedMap) async {
+    await fbs
+        .collection(tableName)
+        .doc(uidOfTeacher)
+        .collection("StudentTable")
+        .doc(uidOfStudent)
+        .update(updatedMap);
   }
 }

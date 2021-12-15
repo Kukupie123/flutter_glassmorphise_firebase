@@ -6,15 +6,17 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
+import 'package:teacher_student_firebae/API/authservice.dart';
 import 'package:teacher_student_firebae/Models/gender.dart';
 import 'package:teacher_student_firebae/Providers/provider_auth.dart';
 
 class CompStudentDetailCard extends StatefulWidget {
-  const CompStudentDetailCard({Key? key,
-    required this.gender,
-    required this.dob,
-    required this.name,
-    required this.id})
+  const CompStudentDetailCard(
+      {Key? key,
+      required this.gender,
+      required this.dob,
+      required this.name,
+      required this.id})
       : super(key: key);
   final String name;
   final String dob;
@@ -55,10 +57,7 @@ class _CompStudentDetailCardState extends State<CompStudentDetailCard> {
   Widget build(BuildContext context) {
     return ClipRRect(
       child: Container(
-        height: MediaQuery
-            .of(context)
-            .size
-            .height * 0.2,
+        height: MediaQuery.of(context).size.height * 0.2,
         width: double.infinity,
         color: Colors.blueGrey.withOpacity(0.5),
         child: BackdropFilter(
@@ -94,10 +93,7 @@ class _CompStudentDetailCardState extends State<CompStudentDetailCard> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 SizedBox(
-                  width: MediaQuery
-                      .of(context)
-                      .size
-                      .width * 0.5,
+                  width: MediaQuery.of(context).size.width * 0.5,
                   child: TextField(
                     controller: nameC,
                     decoration: InputDecoration(hintText: "Name"),
@@ -226,12 +222,8 @@ class _CompStudentDetailCardState extends State<CompStudentDetailCard> {
 
     if (dob != null) updatedMap.addAll({"DOB": dob});
 
-    await fbs
-        .collection(tableName)
-        .doc(pro.user!.uid)
-        .collection("StudentTable")
-        .doc(widget.id)
-        .update(updatedMap);
+    await AuthService.updateStudentData(
+        fbs, pro.user!.uid, widget.id, updatedMap);
 
     serverProcessing = false;
   }

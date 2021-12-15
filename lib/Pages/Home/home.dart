@@ -6,8 +6,8 @@ import 'dart:ui';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fancy_bottom_navigation/fancy_bottom_navigation.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
+import 'package:teacher_student_firebae/API/authservice.dart';
 import 'package:teacher_student_firebae/Models/gender.dart';
 import 'package:teacher_student_firebae/Pages/Home/components/studentdetailcard.dart';
 import 'package:teacher_student_firebae/Providers/provider_auth.dart';
@@ -37,10 +37,14 @@ class _PageHomeState extends State<PageHome> {
   void initState() {
     super.initState();
     studentCollectionStream = FirebaseFirestore.instanceFor(
-            app: Provider.of<ProviderAuthConfig>(context, listen: false)
-                .firebaseApp)
+        app: Provider
+            .of<ProviderAuthConfig>(context, listen: false)
+            .firebaseApp)
         .collection(tableName)
-        .doc(Provider.of<ProviderAuthConfig>(context, listen: false).user!.uid)
+        .doc(Provider
+        .of<ProviderAuthConfig>(context, listen: false)
+        .user!
+        .uid)
         .collection("StudentTable")
         .snapshots();
   }
@@ -53,9 +57,9 @@ class _PageHomeState extends State<PageHome> {
         child: Container(
           decoration: BoxDecoration(
               image: DecorationImage(
-            fit: BoxFit.cover,
-            image: AssetImage('assets/bg2.jpg'),
-          )),
+                fit: BoxFit.cover,
+                image: AssetImage('assets/bg2.jpg'),
+              )),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -104,7 +108,10 @@ class _PageHomeState extends State<PageHome> {
               child: Container(
                 width: double.infinity,
                 color: Colors.blueGrey.withOpacity(0.3),
-                height: MediaQuery.of(context).size.height * 0.8,
+                height: MediaQuery
+                    .of(context)
+                    .size
+                    .height * 0.8,
                 child: SingleChildScrollView(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.end,
@@ -189,7 +196,24 @@ class _PageHomeState extends State<PageHome> {
                       Padding(
                         padding: EdgeInsets.only(top: 20),
                         child: TextButton.icon(
-                          onPressed: _uploadPressed,
+                          onPressed: () async {
+                            await AuthService.uploadStudentData(
+                                FirebaseFirestore.instanceFor(
+                                    app: Provider
+                                        .of<ProviderAuthConfig>(
+                                        context,
+                                        listen: false)
+                                        .firebaseApp),
+                                Provider
+                                    .of<ProviderAuthConfig>(context,
+                                    listen: false)
+                                    .user!
+                                    .uid,
+                                nameC.text,
+                                gender,
+                                dob!,
+                                context);
+                          },
                           icon: Icon(
                             Icons.upload,
                             color: Colors.white,
@@ -204,7 +228,11 @@ class _PageHomeState extends State<PageHome> {
                       Row(
                         children: [
                           TextButton(
-                              onPressed: _logoutPressed, child: Text("Logout"))
+                            onPressed: () async {
+                              await AuthService.logoutPressed(context);
+                            },
+                            child: Text("Logout"),
+                          )
                         ],
                       )
                     ],
@@ -229,12 +257,15 @@ class _PageHomeState extends State<PageHome> {
         } else {
           if (snapshot.hasData)
             return SizedBox(
-                height: MediaQuery.of(context).size.height * 0.8,
+                height: MediaQuery
+                    .of(context)
+                    .size
+                    .height * 0.8,
                 child: ListView(
                   children:
-                      snapshot.data!.docs.map((DocumentSnapshot document) {
+                  snapshot.data!.docs.map((DocumentSnapshot document) {
                     Map<String, dynamic> data =
-                        document.data()! as Map<String, dynamic>;
+                    document.data()! as Map<String, dynamic>;
 
                     var dpb = data['DOB'] as Timestamp;
                     DateTime gg = dpb.toDate();
@@ -256,75 +287,5 @@ class _PageHomeState extends State<PageHome> {
         }
       },
     );
-  }
-
-  _uploadPressed() async {
-    if (serverProcessInProgress == true) {
-      Fluttertoast.showToast(
-          msg: "Please wait for previous process to complete",
-          backgroundColor: Colors.white.withOpacity(0.7));
-      return;
-    }
-    serverProcessInProgress = true;
-    const String tableName = "TeacherTable";
-    if (nameC.text.isEmpty) {
-      Fluttertoast.showToast(
-          msg: "Empty Name field",
-          backgroundColor: Colors.white.withOpacity(0.7));
-      serverProcessInProgress = false;
-      return;
-    }
-    if (dob == null) {
-      Fluttertoast.showToast(
-          msg: "Please Select a date of birth",
-          backgroundColor: Colors.white.withOpacity(0.7));
-      serverProcessInProgress = false;
-
-      return;
-    }
-
-    try {
-      ProviderAuthConfig pro =
-          Provider.of<ProviderAuthConfig>(context, listen: false);
-      FirebaseFirestore fbs =
-          FirebaseFirestore.instanceFor(app: pro.firebaseApp);
-      String uid = pro.user!.uid;
-      //Check if doc exists with this id
-
-      var doc = await fbs.collection(tableName).doc(uid).get();
-      if (doc.exists == false) {
-        await _createUser(uid);
-      }
-      await fbs.collection(tableName).doc(uid).collection("StudentTable").add({
-        "Name": nameC.text,
-        "Gender": gender.toString().replaceAll("GENDER.", ""),
-        "DOB": dob
-      });
-
-      serverProcessInProgress = false;
-
-      await Future.delayed(Duration(seconds: 3));
-    } on FirebaseException catch (e) {
-      serverProcessInProgress = false;
-      Fluttertoast.showToast(
-          msg: e.message.toString(),
-          backgroundColor: Colors.white.withOpacity(0.7));
-
-      await Future.delayed(Duration(seconds: 3));
-      print(e.toString());
-    }
-  }
-
-  _logoutPressed() async {
-    Provider.of<ProviderAuthConfig>(context, listen: false)
-        .firebaseAuth
-        .signOut();
-  }
-
-  _createUser(String uid) async {
-    String table = "TeacherTable";
-    var pro = Provider.of<ProviderAuthConfig>(context, listen: false);
-    var fbs = FirebaseFirestore.instanceFor(app: pro.firebaseApp);
-    await fbs.collection(table).doc(uid).set({"dummy data": "dummy data"});
   }
 }

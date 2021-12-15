@@ -14,7 +14,7 @@ import 'Pages/Home/homewrapper.dart';
 void main() {
   //Ensures that widgets have been initialised
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const MaterialApp(home: PageVerifyEmail()));
+  runApp(const MaterialApp(home: MyApp()));
 }
 
 class MyApp extends StatelessWidget {
