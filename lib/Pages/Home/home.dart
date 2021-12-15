@@ -201,6 +201,12 @@ class _PageHomeState extends State<PageHome> {
                           ),
                         ),
                       ),
+                      Row(
+                        children: [
+                          TextButton(
+                              onPressed: _logoutPressed, child: Text("Logout"))
+                        ],
+                      )
                     ],
                   ),
                 ),
@@ -282,13 +288,7 @@ class _PageHomeState extends State<PageHome> {
           Provider.of<ProviderAuthConfig>(context, listen: false);
       FirebaseFirestore fbs =
           FirebaseFirestore.instanceFor(app: pro.firebaseApp);
-
-      await pro.firebaseAuth.signInWithEmailAndPassword(
-          email: "kukuborom@gmail.com", password: "123456");
-
       String uid = pro.user!.uid;
-      print(uid);
-
       //Check if doc exists with this id
 
       var doc = await fbs.collection(tableName).doc(uid).get();
@@ -313,6 +313,12 @@ class _PageHomeState extends State<PageHome> {
       await Future.delayed(Duration(seconds: 3));
       print(e.toString());
     }
+  }
+
+  _logoutPressed() async {
+    Provider.of<ProviderAuthConfig>(context, listen: false)
+        .firebaseAuth
+        .signOut();
   }
 
   _createUser(String uid) async {

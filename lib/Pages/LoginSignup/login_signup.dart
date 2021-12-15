@@ -7,6 +7,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:glassmorphism_buttons/glassmorphism_buttons.dart';
 import 'package:provider/provider.dart';
+import 'package:teacher_student_firebae/API/authservice.dart';
 import 'package:teacher_student_firebae/Providers/provider_auth.dart';
 
 class PageLoginSignup extends StatefulWidget {
@@ -150,8 +151,7 @@ class _PageLoginSignupState extends State<PageLoginSignup> {
     var pro = Provider.of<ProviderAuthConfig>(context, listen: false);
 
     try {
-       await pro.firebaseAuth.signInWithEmailAndPassword(
-          email: emailC.text, password: passwordC.text);
+      await AuthService.signIn(emailC.text, passwordC.text, pro.firebaseAuth);
     } on FirebaseAuthException catch (e) {
       statusSC.add(e.message.toString());
     }
@@ -172,8 +172,7 @@ class _PageLoginSignupState extends State<PageLoginSignup> {
     var pro = Provider.of<ProviderAuthConfig>(context, listen: false);
 
     try {
-      await pro.firebaseAuth.createUserWithEmailAndPassword(
-          email: emailC.text, password: passwordC.text);
+      await AuthService.signUp(emailC.text, passwordC.text, pro.firebaseAuth);
     } on Exception catch (e) {
       statusSC.add("ERROR");
       statusSC.add(e.toString());

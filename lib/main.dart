@@ -4,14 +4,17 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:teacher_student_firebae/API/authservice.dart';
 import 'package:teacher_student_firebae/Pages/LoginSignup/login_signup.dart';
+import 'package:teacher_student_firebae/Pages/VerifyEmail/verifyemail.dart';
 import 'package:teacher_student_firebae/Providers/provider_auth.dart';
+import 'package:teacher_student_firebae/Providers/provider_const.dart';
 import 'Pages/Home/homewrapper.dart';
 
 void main() {
   //Ensures that widgets have been initialised
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const MaterialApp(home: MyApp()));
+  runApp(const MaterialApp(home: PageVerifyEmail()));
 }
 
 class MyApp extends StatelessWidget {
@@ -29,7 +32,7 @@ class PreWrapper extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<FirebaseApp>(
-      future: Firebase.initializeApp( ),
+      future: Firebase.initializeApp(),
       builder: (context, snapshot) {
         if (snapshot.hasData == false) {
           return Scaffold(
@@ -73,6 +76,7 @@ class _InitialWrapperState extends State<InitialWrapper> {
           create: (context) =>
               ProviderAuthConfig(widget.firebaseApp, _fireBaseAuth),
         ),
+        Provider<ProviderConst>(create: (context) => ProviderConst())
       ],
       builder: (context, child) => PageAuthListener(),
     );

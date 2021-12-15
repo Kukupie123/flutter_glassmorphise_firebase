@@ -87,7 +87,7 @@ class _CompStudentDetailCardState extends State<CompStudentDetailCard> {
   Widget _nameDecider() {
     if (isInDeleteMode) {
       {
-        nameC.text = widget.n ame;
+        nameC.text = widget.name;
         return Padding(
             padding: EdgeInsets.only(bottom: 10),
             child: Row(
