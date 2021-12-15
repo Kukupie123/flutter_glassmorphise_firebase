@@ -4,15 +4,17 @@ import 'dart:ui';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:provider/provider.dart';
 import 'package:teacher_student_firebae/Models/gender.dart';
+import 'package:teacher_student_firebae/Providers/provider_auth.dart';
 
 class CompStudentDetailCard extends StatefulWidget {
-  const CompStudentDetailCard(
-      {Key? key,
-      required this.gender,
-      required this.dob,
-      required this.name,
-      required this.id})
+  const CompStudentDetailCard({Key? key,
+    required this.gender,
+    required this.dob,
+    required this.name,
+    required this.id})
       : super(key: key);
   final String name;
   final String dob;
@@ -27,6 +29,10 @@ class _CompStudentDetailCardState extends State<CompStudentDetailCard> {
   bool isInDeleteMode = false;
   late GENDER genderEnum;
   Timestamp? dob;
+
+  bool serverProcessing = false;
+
+  final TextEditingController nameC = TextEditingController();
 
   @override
   void initState() {
@@ -49,7 +55,10 @@ class _CompStudentDetailCardState extends State<CompStudentDetailCard> {
   Widget build(BuildContext context) {
     return ClipRRect(
       child: Container(
-        height: MediaQuery.of(context).size.height * 0.25,
+        height: MediaQuery
+            .of(context)
+            .size
+            .height * 0.2,
         width: double.infinity,
         color: Colors.blueGrey.withOpacity(0.5),
         child: BackdropFilter(
@@ -58,14 +67,16 @@ class _CompStudentDetailCardState extends State<CompStudentDetailCard> {
               color: Colors.white.withOpacity(0),
               child: Padding(
                 padding: EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    _nameDecider(),
-                    _genderDecider(),
-                    _dobDecider(),
-                  ],
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      _nameDecider(),
+                      _genderDecider(),
+                      _dobDecider(),
+                    ],
+                  ),
                 ),
               )),
         ),
@@ -75,23 +86,34 @@ class _CompStudentDetailCardState extends State<CompStudentDetailCard> {
 
   Widget _nameDecider() {
     if (isInDeleteMode) {
-      return Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          SizedBox(
-            width: MediaQuery.of(context).size.width * 0.5,
-            child: TextField(),
-          ),
-          IconButton(
-              onPressed: () {
-                if (isInDeleteMode == true)
-                  setState(() {
-                    isInDeleteMode = false;
-                  });
-              },
-              icon: Icon(Icons.backspace))
-        ],
-      );
+      {
+        nameC.text = widget.n ame;
+        return Padding(
+            padding: EdgeInsets.only(bottom: 10),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                SizedBox(
+                  width: MediaQuery
+                      .of(context)
+                      .size
+                      .width * 0.5,
+                  child: TextField(
+                    controller: nameC,
+                    decoration: InputDecoration(hintText: "Name"),
+                  ),
+                ),
+                IconButton(
+                    onPressed: () {
+                      if (isInDeleteMode == true)
+                        setState(() {
+                          isInDeleteMode = false;
+                        });
+                    },
+                    icon: Icon(Icons.backspace))
+              ],
+            ));
+      }
     }
     return Padding(
       padding: EdgeInsets.only(bottom: 10),
@@ -145,22 +167,32 @@ class _CompStudentDetailCardState extends State<CompStudentDetailCard> {
 
   Widget _dobDecider() {
     if (isInDeleteMode) {
-      return IconButton(
-          onPressed: () {
-            showDatePicker(
-              context: context,
-              initialDate: DateTime.now(),
-              firstDate: DateTime(2000),
-              lastDate: DateTime.now(),
-            ).then((value) {
-              if (value != null) {
-                setState(() {
-                  dob = Timestamp.fromDate(value);
-                });
-              }
-            });
-          },
-          icon: Icon(Icons.two_mp_sharp));
+      return Column(
+        children: [
+          Row(
+            children: [
+              Text("DOB : "),
+              IconButton(
+                  onPressed: () {
+                    showDatePicker(
+                      context: context,
+                      initialDate: DateTime.now(),
+                      firstDate: DateTime(2000),
+                      lastDate: DateTime.now(),
+                    ).then((value) {
+                      if (value != null) {
+                        setState(() {
+                          dob = Timestamp.fromDate(value);
+                        });
+                      }
+                    });
+                  },
+                  icon: Icon(Icons.two_mp_sharp)),
+            ],
+          ),
+          IconButton(onPressed: _updateData, icon: Icon(Icons.upload))
+        ],
+      );
     }
     return Row(
       children: [Text("DOB : "), Text(widget.dob)],
@@ -175,6 +207,32 @@ class _CompStudentDetailCardState extends State<CompStudentDetailCard> {
   }
 
   _updateData() async {
+    String tableName = "TeacherTable";
+    if (serverProcessing) {
+      Fluttertoast.showToast(msg: "Please wait for previous task to finish");
+      return;
+    }
 
+    serverProcessing = true;
+
+    var pro = Provider.of<ProviderAuthConfig>(context, listen: false);
+    var fbs = FirebaseFirestore.instanceFor(app: pro.firebaseApp);
+
+    Map<String, dynamic> updatedMap = {
+      "Gender": genderEnum.toString().replaceAll("GENDER.", "")
+    };
+
+    if (nameC.text.isNotEmpty) updatedMap.addAll({"Name": nameC.text});
+
+    if (dob != null) updatedMap.addAll({"DOB": dob});
+
+    await fbs
+        .collection(tableName)
+        .doc(pro.user!.uid)
+        .collection("StudentTable")
+        .doc(widget.id)
+        .update(updatedMap);
+
+    serverProcessing = false;
   }
 }
