@@ -118,8 +118,8 @@ class _PageLoginSignupState extends State<PageLoginSignup> {
                                   }
 
                                   return Padding(
-                                    padding: EdgeInsets.all(5),
-                                      child:Text(snapshot.data.toString()));
+                                      padding: EdgeInsets.all(5),
+                                      child: Text(snapshot.data.toString()));
                                 } else {
                                   return Container();
                                 }
@@ -150,7 +150,7 @@ class _PageLoginSignupState extends State<PageLoginSignup> {
     var pro = Provider.of<ProviderAuthConfig>(context, listen: false);
 
     try {
-      await pro.firebaseAuth.signInWithEmailAndPassword(
+       await pro.firebaseAuth.signInWithEmailAndPassword(
           email: emailC.text, password: passwordC.text);
     } on FirebaseAuthException catch (e) {
       statusSC.add(e.message.toString());

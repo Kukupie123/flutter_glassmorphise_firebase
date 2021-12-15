@@ -6,6 +6,7 @@ import 'dart:ui';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fancy_bottom_navigation/fancy_bottom_navigation.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
 import 'package:teacher_student_firebae/Models/gender.dart';
 import 'package:teacher_student_firebae/Pages/Home/components/studentdetailcard.dart';
@@ -20,20 +21,28 @@ class PageHome extends StatefulWidget {
 }
 
 class _PageHomeState extends State<PageHome> {
-  Timestamp? dob;
-
-  StreamController statusSC = StreamController();
+  final String tableName = "TeacherTable";
   bool serverProcessInProgress = false;
+  Timestamp? dob;
 
   int index = 0;
 
   GENDER gender = GENDER.male;
 
-  TextEditingController nameC = TextEditingController();
+  final TextEditingController nameC = TextEditingController();
+
+  late Stream<QuerySnapshot<Map<String, dynamic>>> studentCollectionStream;
 
   @override
   void initState() {
     super.initState();
+    studentCollectionStream = FirebaseFirestore.instanceFor(
+            app: Provider.of<ProviderAuthConfig>(context, listen: false)
+                .firebaseApp)
+        .collection(tableName)
+        .doc(Provider.of<ProviderAuthConfig>(context, listen: false).user!.uid)
+        .collection("StudentTable")
+        .snapshots();
   }
 
   @override
@@ -192,22 +201,6 @@ class _PageHomeState extends State<PageHome> {
                           ),
                         ),
                       ),
-                      StreamBuilder(
-                        initialData: "default",
-                        stream: statusSC.stream,
-                        builder: (context, snapshot) {
-                          switch (snapshot.data) {
-                            case "default":
-                              return Container();
-                            case "loading":
-                              return CircularProgressIndicator();
-                            case "done":
-                              return Icon(Icons.one_x_mobiledata);
-                          }
-
-                          return Container();
-                        },
-                      )
                     ],
                   ),
                 ),
@@ -217,51 +210,114 @@ class _PageHomeState extends State<PageHome> {
         ),
       );
     } else {
-      return ListView(
-        children: List.generate(10, (i) => CompStudentDetail()),
-      );
+      return _studentListWidgetDecider();
     }
   }
 
+  Widget _studentListWidgetDecider() {
+    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+      stream: studentCollectionStream,
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return Text("Something went wrong");
+        } else {
+          if (snapshot.hasData)
+            return SizedBox(
+                height: MediaQuery.of(context).size.height * 0.8,
+                child: ListView(
+                  children:
+                      snapshot.data!.docs.map((DocumentSnapshot document) {
+                    Map<String, dynamic> data =
+                        document.data()! as Map<String, dynamic>;
+
+                    var dpb = data['DOB'] as Timestamp;
+                    DateTime gg = dpb.toDate();
+
+                    return CompStudentDetail(
+                      dob: gg.day.toString() +
+                          "/" +
+                          gg.month.toString() +
+                          "/" +
+                          gg.year.toString(),
+                      gender: data["Gender"],
+                      name: data["Name"],
+                    );
+                  }).toList(),
+                ));
+          else
+            return Container();
+        }
+      },
+    );
+  }
+
   _uploadPressed() async {
-    if (serverProcessInProgress == true) return;
+    if (serverProcessInProgress == true) {
+      Fluttertoast.showToast(
+          msg: "Please wait for previous process to complete",
+          backgroundColor: Colors.white.withOpacity(0.7));
+      return;
+    }
     serverProcessInProgress = true;
-    const String tableName = "StudentTable";
+    const String tableName = "TeacherTable";
     if (nameC.text.isEmpty) {
-      statusSC.add("default");
+      Fluttertoast.showToast(
+          msg: "Empty Name field",
+          backgroundColor: Colors.white.withOpacity(0.7));
       serverProcessInProgress = false;
       return;
     }
     if (dob == null) {
-      statusSC.add("default");
+      Fluttertoast.showToast(
+          msg: "Please Select a date of birth",
+          backgroundColor: Colors.white.withOpacity(0.7));
       serverProcessInProgress = false;
 
       return;
     }
-    ProviderAuthConfig pro =
-        Provider.of<ProviderAuthConfig>(context, listen: false);
-
-    FirebaseFirestore fbs = FirebaseFirestore.instanceFor(app: pro.firebaseApp);
 
     try {
-      await fbs.collection(tableName).add({
+      ProviderAuthConfig pro =
+          Provider.of<ProviderAuthConfig>(context, listen: false);
+      FirebaseFirestore fbs =
+          FirebaseFirestore.instanceFor(app: pro.firebaseApp);
+
+      await pro.firebaseAuth.signInWithEmailAndPassword(
+          email: "kukuborom@gmail.com", password: "123456");
+
+      String uid = pro.user!.uid;
+      print(uid);
+
+      //Check if doc exists with this id
+
+      var doc = await fbs.collection(tableName).doc(uid).get();
+      if (doc.exists == false) {
+        await _createUser(uid);
+      }
+      await fbs.collection(tableName).doc(uid).collection("StudentTable").add({
         "Name": nameC.text,
         "Gender": gender.toString().replaceAll("GENDER.", ""),
         "DOB": dob
       });
 
-      statusSC.add("done");
       serverProcessInProgress = false;
 
       await Future.delayed(Duration(seconds: 3));
-      statusSC.add("default");
-    } on Exception catch (e) {
-      statusSC.add(e.toString());
+    } on FirebaseException catch (e) {
       serverProcessInProgress = false;
+      Fluttertoast.showToast(
+          msg: e.message.toString(),
+          backgroundColor: Colors.white.withOpacity(0.7));
 
       await Future.delayed(Duration(seconds: 3));
-      statusSC.add("default");
       print(e.toString());
     }
+  }
+
+  _createUser(String uid) async {
+    String table = "TeacherTable";
+    var pro = Provider.of<ProviderAuthConfig>(context, listen: false);
+    var fbs = FirebaseFirestore.instanceFor(app: pro.firebaseApp);
+    await fbs.collection(table).doc(uid).set({"dummy data": "dummy data"});
   }
 }

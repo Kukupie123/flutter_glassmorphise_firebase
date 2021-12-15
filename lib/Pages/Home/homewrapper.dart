@@ -34,14 +34,31 @@ class _PageHomeWrapperState extends State<PageHomeWrapper> {
       builder: (context, snapshot) {
         switch (snapshot.data) {
           case "loading":
-            return Text("Loadings");
+            return _getLoadingWidget();
           case "0":
             return Text("NOT VERIFIED");
           case "1":
-            return PageHome(context: context,);
+            return PageHome(
+              context: context,
+            );
         }
         return Container();
       },
+    );
+  }
+
+  Widget _getLoadingWidget() {
+    return Scaffold(
+      resizeToAvoidBottomInset: false,
+      body: Container(
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            fit: BoxFit.cover,
+            image: AssetImage("assets/bg.jpg"),
+          ),
+        ),
+        child: Text("Verifying user data please wait..."),
+      ),
     );
   }
 
