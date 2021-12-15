@@ -1,4 +1,4 @@
-// ignore_for_file: prefer_const_constructors, curly_braces_in_flow_control_structures, prefer_const_literals_to_create_immutables, avoid_unnecessary_containers, avoid_print
+// ignore_for_file: prefer_const_constructors, curly_braces_in_flow_control_structures, prefer_const_literals_to_create_immutables, avoid_unnecessary_containers, avoid_print, empty_catches
 
 import 'dart:async';
 import 'dart:ui';
@@ -6,6 +6,7 @@ import 'dart:ui';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fancy_bottom_navigation/fancy_bottom_navigation.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
 import 'package:teacher_student_firebae/API/authservice.dart';
 import 'package:teacher_student_firebae/Models/gender.dart';
@@ -32,7 +33,8 @@ class _PageHomeState extends State<PageHome> {
 
   final TextEditingController nameC = TextEditingController();
 
-  late Stream<QuerySnapshot<Map<String, dynamic>>> studentCollectionStream; //Snapshot of studentCollection of the logged in teacher (for use in real time viewinv)
+  late Stream<QuerySnapshot<Map<String, dynamic>>>
+      studentCollectionStream; //Snapshot of studentCollection of the logged in teacher (for use in real time viewinv)
 
   @override
   void initState() {
@@ -144,9 +146,7 @@ class _PageHomeState extends State<PageHome> {
                                       lastDate: DateTime.now(),
                                     ).then((value) {
                                       if (value != null) {
-                                        setState(() {
-                                          dob = Timestamp.fromDate(value);
-                                        });
+                                        dob = Timestamp.fromDate(value);
                                       }
                                     });
                                   },
@@ -191,6 +191,22 @@ class _PageHomeState extends State<PageHome> {
                         padding: EdgeInsets.only(top: 20),
                         child: TextButton.icon(
                           onPressed: () async {
+                            if (serverProcessInProgress) {
+                              Fluttertoast.showToast(
+                                  msg:
+                                      "Please wait for previous Process to finish");
+                              return;
+                            }
+                            if (dob == null) {
+                              Fluttertoast.showToast(
+                                  msg: "Invalid Date of birth");
+                              return;
+                            }
+                            if (nameC.text.isEmpty) {
+                              Fluttertoast.showToast(msg: "Invalid Name");
+                              return;
+                            }
+                            serverProcessInProgress = true;
                             await AuthService.uploadStudentData(
                                 FirebaseFirestore.instanceFor(
                                     app: Provider.of<ProviderAuthConfig>(
@@ -205,6 +221,7 @@ class _PageHomeState extends State<PageHome> {
                                 gender,
                                 dob!,
                                 context);
+                            serverProcessInProgress = false;
                           },
                           icon: Icon(
                             Icons.upload,
@@ -221,7 +238,17 @@ class _PageHomeState extends State<PageHome> {
                         children: [
                           TextButton(
                             onPressed: () async {
-                              await AuthService.logoutPressed(context);
+                              if (serverProcessInProgress) {
+                                Fluttertoast.showToast(
+                                    msg: "wait for previous process to finish");
+                                return;
+                              }
+
+                              try {
+                                serverProcessInProgress = true;
+                                await AuthService.logoutPressed(context);
+                              } on Exception {}
+                              serverProcessInProgress = false;
                             },
                             child: Text("Logout"),
                           )

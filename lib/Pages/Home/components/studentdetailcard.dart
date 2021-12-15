@@ -1,4 +1,4 @@
-// ignore_for_file: prefer_const_literals_to_create_immutables, prefer_const_constructors, curly_braces_in_flow_control_structures
+// ignore_for_file: prefer_const_literals_to_create_immutables, prefer_const_constructors, curly_braces_in_flow_control_structures, empty_catches
 
 import 'dart:ui';
 
@@ -221,9 +221,10 @@ class _CompStudentDetailCardState extends State<CompStudentDetailCard> {
 
     if (dob != null) updatedMap.addAll({"DOB": dob});
 
-    await AuthService.updateStudentData(
-        fbs, pro.user!.uid, widget.id, updatedMap);
-
+    try {
+      await AuthService.updateStudentData(
+          fbs, pro.user!.uid, widget.id, updatedMap);
+    } on Exception {}
     serverProcessing = false;
   }
 }
