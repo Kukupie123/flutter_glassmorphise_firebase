@@ -13,38 +13,35 @@ import 'package:teacher_student_firebae/Pages/Home/components/studentdetailcard.
 import 'package:teacher_student_firebae/Providers/provider_auth.dart';
 
 class PageHome extends StatefulWidget {
-  const PageHome({Key? key, required this.context}) : super(key: key);
-  final BuildContext context;
+  const PageHome({
+    Key? key,
+  }) : super(key: key);
 
   @override
   _PageHomeState createState() => _PageHomeState();
 }
 
 class _PageHomeState extends State<PageHome> {
-  final String tableName = "TeacherTable";
   bool serverProcessInProgress = false;
-  Timestamp? dob;
+  Timestamp? dob; //stores date of birth entered
 
-  int index = 0;
+  int index =
+      0; //to determine which section to view, 0 = upload user data, 1 = list all students
 
-  GENDER gender = GENDER.male;
+  GENDER gender = GENDER.male; //stores gender that was selected
 
   final TextEditingController nameC = TextEditingController();
 
-  late Stream<QuerySnapshot<Map<String, dynamic>>> studentCollectionStream;
+  late Stream<QuerySnapshot<Map<String, dynamic>>> studentCollectionStream; //Snapshot of studentCollection of the logged in teacher (for use in real time viewinv)
 
   @override
   void initState() {
     super.initState();
     studentCollectionStream = FirebaseFirestore.instanceFor(
-        app: Provider
-            .of<ProviderAuthConfig>(context, listen: false)
-            .firebaseApp)
-        .collection(tableName)
-        .doc(Provider
-        .of<ProviderAuthConfig>(context, listen: false)
-        .user!
-        .uid)
+            app: Provider.of<ProviderAuthConfig>(context, listen: false)
+                .firebaseApp)
+        .collection(AuthService.tableName)
+        .doc(Provider.of<ProviderAuthConfig>(context, listen: false).user!.uid)
         .collection("StudentTable")
         .snapshots();
   }
@@ -57,9 +54,9 @@ class _PageHomeState extends State<PageHome> {
         child: Container(
           decoration: BoxDecoration(
               image: DecorationImage(
-                fit: BoxFit.cover,
-                image: AssetImage('assets/bg2.jpg'),
-              )),
+            fit: BoxFit.cover,
+            image: AssetImage('assets/bg2.jpg'),
+          )),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -108,10 +105,7 @@ class _PageHomeState extends State<PageHome> {
               child: Container(
                 width: double.infinity,
                 color: Colors.blueGrey.withOpacity(0.3),
-                height: MediaQuery
-                    .of(context)
-                    .size
-                    .height * 0.8,
+                height: MediaQuery.of(context).size.height * 0.8,
                 child: SingleChildScrollView(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.end,
@@ -199,14 +193,12 @@ class _PageHomeState extends State<PageHome> {
                           onPressed: () async {
                             await AuthService.uploadStudentData(
                                 FirebaseFirestore.instanceFor(
-                                    app: Provider
-                                        .of<ProviderAuthConfig>(
-                                        context,
-                                        listen: false)
+                                    app: Provider.of<ProviderAuthConfig>(
+                                            context,
+                                            listen: false)
                                         .firebaseApp),
-                                Provider
-                                    .of<ProviderAuthConfig>(context,
-                                    listen: false)
+                                Provider.of<ProviderAuthConfig>(context,
+                                        listen: false)
                                     .user!
                                     .uid,
                                 nameC.text,
@@ -248,6 +240,7 @@ class _PageHomeState extends State<PageHome> {
     }
   }
 
+  ///Returns a populated listview of students based on snapshot data of the StudentTable
   Widget _studentListWidgetDecider() {
     return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
       stream: studentCollectionStream,
@@ -257,15 +250,12 @@ class _PageHomeState extends State<PageHome> {
         } else {
           if (snapshot.hasData)
             return SizedBox(
-                height: MediaQuery
-                    .of(context)
-                    .size
-                    .height * 0.8,
+                height: MediaQuery.of(context).size.height * 0.8,
                 child: ListView(
                   children:
-                  snapshot.data!.docs.map((DocumentSnapshot document) {
+                      snapshot.data!.docs.map((DocumentSnapshot document) {
                     Map<String, dynamic> data =
-                    document.data()! as Map<String, dynamic>;
+                        document.data()! as Map<String, dynamic>;
 
                     var dpb = data['DOB'] as Timestamp;
                     DateTime gg = dpb.toDate();

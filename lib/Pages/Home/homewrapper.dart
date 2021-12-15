@@ -9,6 +9,7 @@ import 'package:teacher_student_firebae/Providers/provider_auth.dart';
 
 import 'home.dart';
 
+///Shows different pages based on email verification of the logged in user
 class PageHomeWrapper extends StatefulWidget {
   const PageHomeWrapper({Key? key}) : super(key: key);
 
@@ -17,14 +18,14 @@ class PageHomeWrapper extends StatefulWidget {
 }
 
 class _PageHomeWrapperState extends State<PageHomeWrapper> {
-  late ProviderAuthConfig pro;
-  StreamController sc = StreamController();
+  late ProviderAuthConfig pro; //ProviderAuthConfig object from our provider.
+  StreamController sc = StreamController(); //data is added in this StreamController, that data is used by streamBuilder to determine which UI to view
 
   @override
   void initState() {
     super.initState();
     pro = Provider.of<ProviderAuthConfig>(context, listen: false);
-    _isEmailVerifiedAction();
+    _isEmailVerifiedAction(); //Runs an email verification check on initialization
   }
 
   @override
@@ -40,7 +41,7 @@ class _PageHomeWrapperState extends State<PageHomeWrapper> {
             return PageVerifyEmail();
           case "1":
             return PageHome(
-              context: context,
+
             );
         }
         return Container();
@@ -65,7 +66,6 @@ class _PageHomeWrapperState extends State<PageHomeWrapper> {
   }
 
   _isEmailVerifiedAction() async {
-    print("FOO");
     //pro.user can't be null as we reach this page only when user is not null
     await pro.user!.reload();
     //after reloading we are going check if email has been verified or not

@@ -1,4 +1,4 @@
-// ignore_for_file: prefer_const_constructors, avoid_print
+// ignore_for_file: prefer_const_constructors, avoid_print, curly_braces_in_flow_control_structures
 
 import 'dart:async';
 
@@ -8,6 +8,7 @@ import 'package:teacher_student_firebae/Pages/Home/homewrapper.dart';
 import 'package:teacher_student_firebae/Pages/LoginSignup/login_signup.dart';
 import 'package:teacher_student_firebae/Providers/provider_auth.dart';
 
+///Adds an event to onAuthChange and takes the decision of either opening login or homeWrapper page
 class PageAuthWrapper extends StatefulWidget {
   const PageAuthWrapper({Key? key}) : super(key: key);
 
@@ -28,12 +29,11 @@ class _PageAuthWrapperState extends State<PageAuthWrapper> {
 
   @override
   Widget build(BuildContext context) {
-    if(pro.user == null){
+    if (pro.user == null)
       //never logged in
       return PageLoginSignup();
-    }
+
+    //Logged in, PageHomeWrapper will do further more checks
     return PageHomeWrapper();
   }
-
-
 }

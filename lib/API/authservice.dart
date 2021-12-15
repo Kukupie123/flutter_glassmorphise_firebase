@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:teacher_student_firebae/Models/gender.dart';
 import 'package:teacher_student_firebae/Providers/provider_auth.dart';
 
+///Responsible for handling all requests sent to firebase
 class AuthService {
   static const String tableName = "TeacherTable";
 

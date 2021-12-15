@@ -203,7 +203,6 @@ class _CompStudentDetailCardState extends State<CompStudentDetailCard> {
   }
 
   _updateData() async {
-    String tableName = "TeacherTable";
     if (serverProcessing) {
       Fluttertoast.showToast(msg: "Please wait for previous task to finish");
       return;
