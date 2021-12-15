@@ -74,12 +74,13 @@ class _PageLoginSignupState extends State<PageLoginSignup> {
                                   keyboardType: TextInputType.emailAddress,
                                 ),
                                 TextField(
+                                  obscureText: true,
                                   controller: passwordC,
                                   decoration: InputDecoration(
                                     hintText: "Password",
                                     hintStyle: TextStyle(color: Colors.black),
                                     alignLabelWithHint: true,
-                                    label: Icon(Icons.email),
+                                    label: Icon(Icons.password),
                                   ),
                                   keyboardType: TextInputType.visiblePassword,
                                 ),
