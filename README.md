@@ -1,7 +1,7 @@
 # teacher_student_firebase
-#Details
+# Details
 An app which lets teacher create an account and create a list of students
-FRONTEND
+# FRONTEND
 1. Login, Signup as a teacher along with email verification links
 2. Create a list of students that can only be modified by the teacher themselves
 3. Secure firestore rules ensure that the teacher is the only one who can read the student list of his account and no one else
@@ -10,7 +10,7 @@ FRONTEND
     without actually storing anything on the local device.
 
 
-BACKEND
+# BACKEND
 6. Well designed collection in firestore where each teacher is a doc and student lists is another collection inside the teacher's doc
     This ensures that if we have thousands of teacher docs and each of them have thousands of student we are still going to get very fast
     read and write actions performed on the student list as they reside soley inside the teacher docs instead of being stored in one single
