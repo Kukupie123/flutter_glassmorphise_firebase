@@ -185,7 +185,7 @@ class _PageHomeState extends State<PageHome> {
                             )),
                       ),
 
-                      //Upload button
+                      ///Upload button
                       Padding(
                         padding: EdgeInsets.only(top: 20),
                         child: TextButton.icon(
@@ -233,7 +233,7 @@ class _PageHomeState extends State<PageHome> {
                     var dpb = data['DOB'] as Timestamp;
                     DateTime gg = dpb.toDate();
 
-                    return CompStudentDetail(
+                    return CompStudentDetailCard(
                       dob: gg.day.toString() +
                           "/" +
                           gg.month.toString() +
@@ -241,6 +241,7 @@ class _PageHomeState extends State<PageHome> {
                           gg.year.toString(),
                       gender: data["Gender"],
                       name: data["Name"],
+                      id: document.id,
                     );
                   }).toList(),
                 ));
